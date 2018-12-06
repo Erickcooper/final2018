@@ -1,7 +1,7 @@
 ---
 title: "Abacavirinol"
-author: "Put your name here!"
-date: "put the date here"
+author: "Erick Cooper"
+date: "12/3/2018"
 output: html_document
 ---
 
@@ -9,17 +9,30 @@ output: html_document
 require(tidyverse)
 require(tigerstats)
 abac <-read.csv(file="abacavirinol.csv",header=TRUE)
+library(dplyr)
 ```
 
 # Introduction
 
 <!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?.  If you skimp in this section expect to be marked down in your grade. Paint a picture of the project a couple of paragraphs is expected!-->
 
-A new  preventative aides (abacavirinol) is under test in clinical trials. Analyze the effectiveness of this drug across the board. Consider population subgroups by gender, drug use, and sexual orientation. Finish this!
+A new  preventative for aids (abacavirinol) is under test in clinical trials. Analyze the effectiveness of this drug across the board. Consider population subgroups by gender, IV drug use, and sexual orientation.
 
 # Methods
 
 <!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method. Discuss what data manipulations may be needed for example subsetting or other binning procedures and what sort of graphical displays and inferential tools will be used!-->
+
+This study was a community-based, randomized, multicenter, double-blind, placebo-controlled efficacy trial of new  preventative for aids (abacavirinol). 
+
+```{r}
+groupsize = 4927
+subgp = groupsize/2
+drug = c(subgp-51,51)
+placebo =  c(subgp-74,74)
+results = as.table(cbind(drug,placebo))
+rownames(results) <- c("none","aids")
+
+```
 
 #Results
 
@@ -30,16 +43,64 @@ A new  preventative aides (abacavirinol) is under test in clinical trials. Analy
 ### Graphical Descriptive Results
 
 <!--Graphical results here.  Make sure to show your code.  Provide appropriate labels for axes, giving units if possible, and provide a good title for the graph, too.  Use the graphical results to describe the patterns if any that exist in the data as focused toward the research question. Bottom line is to explain the features of the graph that are relevant to conforming or departing to what is expected by your null hypothesis !-->
+```{r}
+barchartGC(results,type = "percent")
+```
 
 ### Numerical Descriptive Results
 
 <!--Numerical results go here. Use the numerical results to describe the patterns if any that exist in the data as focused toward the research question!-->
 
+```{r}
+colPerc(results)
+rowPerc(results)
+```
+
+
 ## Inferential Results
 
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
 
+  We will begin by creating a table that presents all of the data we are presented.
+
+```{r}
+table(abac$treatment, abac$sex, abac$infected, abac$Ivdrug, abac$LBGT)
+```
+
+  We will perform a chi square test on the different groups in conjunction with infection and treatment.
+
+```{r}
+chisq.test(abac$treatment, abac$sex, abac$infected, correct=FALSE)
+
+chisq.test(abac$treatment, abac$LBGT, abac$infected, correct=FALSE)
+
+chisq.test(abac$treatment, abac$Ivdrug, abac$infected, correct=FALSE)
+```
+  Testing an observation for how well it fits with the data requires a chi square test to make numerical data of categorical. This allows for us to test for fitness and if the variables are independent. As the null hypothesis of a chi square test is independence we will base our hypothesis on this framing.
+
+$$H0$$
+      Being LBGT is an independent factor of the results of the drug
+$$Hu$$
+      Being LBGT is a dependent factor of the results of the drug
+
+  Chi square test revealed a 0.2147 p-value so we accept the null hypothesis.
+  
+$$H0$$
+      Being male or female is an independent factor of the results of the drug
+$$Hu$$
+      Being male or female is a dependent factor of the results of the drug
+
+  Chi square test revealed a 0.8639 p-value so we can confidently accept the null hypothesis.
+
+$$H0$$
+      Being an IV drug user is an independent factor of the results of the drug
+$$Hu$$
+      Being an IV drug user is a dependent factor of the results of the drug
+  
+  Chi square test revealed a 0.01688 p-value so we can confidently reject the null hypothesis.
 
 # Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
+
+  There appears to be a correllation between being an IV drug user and efficacy of the drug. Where as, gender and LGBT were found to be independent variables. It is most likely that IV drug users were more susceptible because of being in more contact with HIV and gender and sexual orientation do not change such encounters as much. Previous studies show that homosexuals do tend to have more HIV but that is probably because contraception is not a consideration because who's going to get pregnant? We see a lower p-value in LBGT (0.2147) which indicates a 21% independece factor that is much smaller than gender's p-value. I believe that contraception not being a factor is a possible cause of this variance.
